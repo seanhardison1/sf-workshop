@@ -1,0 +1,68 @@
+---
+title: "spatial-intro"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(sp)
+```
+
+## Simple Features (sf)
+
+https://r-spatial.github.io/sf/articles/sf1.html
+
+* What are `simple features`?
+
+  * A formally recognized standard for encoding spatial information 
+  * Implemented widely in spatial databases and commercial GIS outside of R (e.g. PostGIS, ArcGIS)
+  * A data structure with both spatial and non-spatial attributes
+  
+* Why `sf`?
+  * Methods for interfacing with spatial data have existed for a long time in R, but using them is a pain.
+  * `sf` is built to be the successor to these sometimes painful libraries, such as `sp`
+  
+* What is a feature?
+  * A feature is a real-world object (forests are features, but so are trees in the forests.)
+
+* What's in a feature?
+  * Geometry - A descriptor of location.
+  * Attributes - Descriptors of feature properties (e.g. temperature)
+  * Show diagram
+  
+* Interacting with simple features in R
+  * All functions and methods in `sf` begin with `st_`
+  * Attributes and geometries are stored as `data.frame` columns
+  
+* What's the difference between a GEOMETRY and GEOMETRYCOLLECTION?
+  * If a single sf contains more than one *type* of GEOMETRY, it is a GEOMETRYCOLLECTION
+  * For example, a single simple feature with both points and lines would be of type GEOMETRYCOLLECTION
+
+* What's the difference between a POLYGON and a MULTIPOLYGON geometry type?
+  * POLYGONs are allowed to have an exterior ring and zero or more interior rings
+  * MULTIPOLYGONS are composed of multiple POLYGONS
+  * This means that MULTIPOLYGONs are lists of lists of matrices
+  
+* How are data represented in different geometries?
+  * All geometries are represented as lists of matrices (code example)
+  
+* What is a `proj4string` and how is it used?
+  * All geometries in an `sf` object must have the same coordinate reference system (CRS)
+  * A generic, string-based description of a coordinate reference system. 
+  * The `proj4string` conveys information about a given coordinate transformation, that is, how geospatial information should be represented on a piece of paper. Included within the `proj4string` is a projection argument. This describes a mathematical transformation of a section of a spheroid onto a 2D surface. 
+    * A datum. The datum defines the size, orientation, and position of an ellipsoid that approximates the shape of the earth. It forms a reference point for coordinate pairs.
+  * `epsg`: An integer code for a specific coordinate reference system that can be resolved into a `proj4string`
+
+* Transforming CRSs:
+  * CRS transformations are performed using `st_transform()` in `sf`.
+  * This method allows for use to convert between datum types. For example, between lat/lon in NAD27 datum to web mercator (used by web maps like Google Maps). Web mercator 
+https://gis.stackexchange.com/questions/664/difference-between-projection-and-datum
+
+
+```{r}
+library(sf)
+
+nc <- st_read(system.file("shape/nc.shp", package="sf"))
+
+```
+
