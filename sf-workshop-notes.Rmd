@@ -4,9 +4,132 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(sp)
+knitr::opts_chunk$set(echo = T, include = T, warning = F)
+
+#A function to install missing packages
+
+packages <- c("tidyverse", "sf", "stars", "raster", "here","rgdal", "lwgeom")
+
+installLoadPackages <- function(pkg){
+    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+    if (length(new.pkg)) 
+        install.packages(new.pkg, dependencies = TRUE,repos='http://cran.us.r-project.org')
+    sapply(pkg, require, character.only = TRUE)
+}
+installLoadPackages(packages)
+
 ```
+
+## Data structures
+
+### Check out the structure of an `sf` object. 
+```{r view_structure}
+library(sf)
+nc <- st_read(system.file("shape/nc.shp", package="sf"), quiet = T)
+
+head(nc)
+
+# Note that nc is a collection of simple features, each of which is described by a row
+
+```
+
+### Now see what it looks like
+```{r plot_nc}
+plot(nc)
+```
+
+### Create the simplest simple feature geometry: a `POINT`
+```{r make_points}
+point_in_space <- c(1,2) #in XY space
+
+point_geometry <- st_point(point_in_space)
+
+
+point_geometry
+plot(point_geometry)
+```
+
+### Combine multiple points into a `MULTIPOINT` geometry
+```{r make_multipoints}
+points_in_space <- rbind(c(3.2,4), c(3,4.6))
+
+multipoint_geometry <- st_multipoint(points_in_space)
+
+
+multipoint_geometry
+plot(multipoint_geometry)
+```
+
+### Create a `LINESTRING` using the same points
+```{r make_linestring}
+linestring_geometry <- st_linestring(points_in_space)
+
+linestring_geometry
+plot(linestring_geometry)
+```
+
+## Working with `sf`
+
+### Reading spatial data
+
+```{r epu_shapes}
+
+#Set relative path to data directory
+epu.dir <- here::here("data","EPU_shapefile")
+
+#Read in shapefile using sf
+sf_shape <- 
+  st_read(file.path(epu.dir,"EPU_extended.shp"),quiet = T)
+
+#Read in shapefile using rgdal
+rgdal_shape <-
+  readOGR(file.path(epu.dir,"EPU_extended.shp"),verbose = F)
+
+epu <- sf_shape %>% dplyr::select(EPU)
+plot(epu)
+  
+```
+
+### Converting between `sf` and `sp` classes
+
+* Check out the class of the shapefile loaded with `rgdal`
+```{r sp_to_sf}
+#Read in shapefile using rgdal
+class(rgdal_shape)
+```
+
+* Convert to `sf` using `methods::as()`
+```{r sp_to_sf2}
+
+sf_shape <- as(rgdal_shape, "sf")
+
+# Or the same thing in tidy style
+
+sf_shape <- rgdal_shape %>% 
+  as("sf")
+
+class(sf_shape)
+```
+
+
+### Identify existing Coordinate Reference System
+```{r st-crs, echo = TRUE}
+st_crs(epu)
+```
+
+
+### Change the Coordinate Reference System
+```{r st-transform}
+
+#Pass a proj4string
+p4s <- "+proj=longlat +datum=NAD27 +no_defs"
+st_transform(epu, p4s)
+
+#Pass an EPSG code
+epsg <- 4627
+st_transform(epu, epsg)
+```
+
 
 ## Simple Features (sf)
 

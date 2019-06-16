@@ -1,0 +1,542 @@
+---
+title: "`sf`: Simple features in R"
+author: "Sean Hardison <br /> Ecosystem Dynamics and Assessment <br /> Integrated Statistics & Northeast Fisheries Science Center"
+output:
+  xaringan::moon_reader:
+    css: ["default", "libs/EDAB_theme.css"]
+    lib_dir: libs
+    nature:
+      titleSlideClass: ["right", "middle", "my-title"]
+      highlightStyle: githubp
+      highlightLines: true
+      countIncrementalSlides: false
+  revealjs::revealjs_presentation:
+    self_contained: false
+    reveal_plugins: ["notes", "search"]
+---
+
+```{r setup, echo = F, message = F}
+library(ggplot2)
+library(sf)
+library(dplyr)
+library(rgdal)
+library(patchwork)
+
+image.dir <- "EDAB_images"
+r.dir <- here::here("R")
+
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(warning = F,
+                      echo = F,
+                      message = F,
+                      fig.align = "center")
+knitr::opts_hooks$set(fig.callout = function(options) {
+  if (options$fig.callout) {
+    options$echo <- FALSE
+    options$out.height <- "99%"
+    options$fig.width <- 16
+    options$fig.height <- 8
+  }
+  options
+})
+
+nc <- st_read(system.file("shape/nc.shp", package="sf"), quiet = T)
+```
+
+```{css, echo=FALSE}
+/* custom.css */
+.left-code {
+  color: #777;
+  width: 38%;
+  height: 92%;
+  float: left;
+}
+.right-plot {
+  width: 60%;
+  float: right;
+  padding-left: 1%;
+}
+.plot-callout {
+  height: 225px;
+  width: 450px;
+  bottom: 5%;
+  right: 5%;
+  position: absolute;
+  padding: 0px;
+  z-index: 100;
+}
+.plot-callout img {
+  width: 100%;
+  border: 4px solid #23373B;
+}
+.remark-slide-content {
+  font-size: 20px;
+  padding: 20px 80px 20px 80px;
+}
+.remark-code, .remark-inline-code {
+  background: #f0f0f0;
+}
+.remark-code {
+  font-size: 20px;
+}
+
+.medium .remark-code { /*Change made here*/
+  font-size: 80% !important;
+}
+
+.tiny .remark-code { /*Change made here*/
+  font-size: 60% !important;
+}
+```
+
+# Today's workshop
+
+.pull-left[
+* Introduction to simple features 
+
+* Interacting with simple features in R using `sf`
+
+* `sf` geometry types
+
+* Common `sf` operations and plotting
+
+* Integration with the `tidyverse`
+
+* Example analyses
+
+]
+
+.pull-right[
+
+![r-sf](https://user-images.githubusercontent.com/520851/34887433-ce1d130e-f7c6-11e7-83fc-d60ad4fae6bd.gif)
+
+]
+
+.footnote[
+  Pebesma, E., 2018. Simple Features for R: Standardized Support for Spatial Vector
+  Data. The R Journal 10 (1), 439-446, https://doi.org/10.32614/RJ-2018-009
+]
+
+---
+
+## Getting started: Required scripts and data 
+
+[sf-workshop](https://github.com/seanhardison1/sf-workshop)
+
+```{r, out.width="100%"}
+knitr::include_graphics(file.path(image.dir, "clone-dir.png"))
+```
+
+* Clone or download the directory
+
+* Open `sf-workshop.Rproj`
+
+* Open `sf-workshop-notes.Rmd`
+
+--
+* Anything loaded/saved/sourced in this document uses the `here` package to determine its location relative to the `.Rproj` file.
+
+* Once `here` is installed, test this by typing `here::here()` into the R console
+
+---
+## Simple features: Models for things in space
+
+```{r, out.width="100%"}
+knitr::include_graphics(file.path(image.dir, "smast1.png"))
+```
+
+---
+## Simple features: Models for things in space
+
+
+```{r, out.width="100%"}
+knitr::include_graphics(file.path(image.dir, "smast2.png"))
+```
+
+---
+## Simple features: Models for things in space
+
+```{r, out.width="100%"}
+knitr::include_graphics(file.path(image.dir, "smast3.png"))
+```
+
+---
+## Simple features: Models for things in space
+
+```{r, out.width="100%"}
+knitr::include_graphics(file.path(image.dir, "smast4.png"))
+```
+
+---
+## Simple features: A standard for spatial information
+
+* A data structure with spatial `geometries` and non-spatial `attributes`
+* Used in spatial databases and commercial GIS applications (e.g. PostGIS and ArcGIS)
+
+```{r, out.width="70%"}
+knitr::include_graphics(file.path(image.dir, "simple-features.png"))
+```
+
+.footnote[
+https://r-spatial.github.io/sf/articles/sf1.html
+]
+
+---
+## Simple features in R using `sf`
+
+* Classic methods for dealing with spatial data in R are a pain
+
+  * `SpatialPointsDataFrame`, `SpatialLineDataFrame`, `SpatialPolygonsDataFrame`...
+  
+--
+  
+* `sf` simplifies this experience while taking advantage of widely used standards
+
+--
+
+* In `sf-workshop-notes.Rmd`, run the `view_structure` code chunk
+
+```{r, out.width="70%"}
+knitr::include_graphics(file.path(image.dir, "sf-data-struc.png"))
+```
+
+
+???
+sf: A simple feature
+sfc: simple feature geometry list-column
+sfg: simple feature geometry
+
+---
+## Simple features in R using `sf`
+
+An object of class `sf`:
+```{r, out.width="70%"}
+knitr::include_graphics(file.path(image.dir, "sf-data-struc.png"))
+```
+
+* Features in the collection are described by rows in the data.frame
+
+* A column named `geometry` describes the spatial aspect of each feature
+
+* All features in the `sf` object have a coordinate reference system (CRS)
+ * Describes a transformation from a 3D surface to a 2D plane (e.g. globe to paper).
+ 
+???
+
+* Functions in `sf` all begin with `st_`
+
+---
+## Feature geometry types
+
+```{r, out.width="80%"}
+knitr::include_graphics(file.path(image.dir, "simple-features.png"))
+```
+
+
+---
+## Feature geometry types
+* All geometry types are defined by groups of point coordinates
+
+```{r , out.width = "70%"}
+knitr::include_graphics(file.path(image.dir, "geometry-types.png"))
+```
+
+* We can make our own special feature geometry (`sfg`) using the `sf` syntax `sf_[geometry]`
+  * For example, `sf_point(c(1,1))`
+  
+* Let's make some geometries, starting with the `make_points` code chunk.
+
+.footnote[
+[source](https://r-spatial.github.io/sf/articles/sf1.html)
+]
+
+---
+## Feature geometry types: `POLYGON` and `MULTIPOLYGON`
+* `POLYGON` geometries are allowed to have one external ring and zero or more internal rings
+* `MULTIPOLYGON` geometries contain > 1 non-nested polygons
+
+```{r , out.width = "70%"}
+knitr::include_graphics(file.path(image.dir, "geometry-types.png"))
+```
+
+
+---
+## A special type of geometry: `GEOMETRYCOLLECTION`
+
+* If a feature (i.e. a row) contains more than one geometry type, it is a `GEOMETRYCOLLECTION`
+
+```{r, out.width="100%"}
+knitr::include_graphics(file.path(image.dir, "smast4.png"))
+```
+
+---
+## Advantages to `sfg` structure
+
+* `sf` objects are also of class `data.frame`, meaning `tidyverse` functions can be applied
+
+.pull-left[
+
+.medium[
+.remark-inline-code[
+```{r plot-label, eval=FALSE, echo = T}
+library(dplyr)
+
+wilmington <- nc %>% 
+  filter(NAME == "New Hanover")
+
+plot(wilmington)
+```
+]
+]
+
+* Note that all associated attributes are plotted for a given geometry
+
+]
+
+.pull-right[
+```{r plot-label-out, ref.label="plot-label", echo=FALSE}
+```
+]
+
+
+---
+## Working with `sf`: Reading data
+
+.tiny[
+.remark-inline-code[
+```{r epu_shapes, echo = T, eval= F}
+
+#Set relative path to data directory
+epu.dir <- here::here("data","EPU_shapefile")
+
+#Read in shapefile using sf
+ {{ sf_shape <- 
+  st_read(file.path(epu.dir,"EPU_extended.shp"),quiet = T) }}
+
+#Read in shapefile using rgdal
+rgdal_shape <- 
+  readOGR(file.path(epu.dir,"EPU_extended.shp"),verbose = F)
+
+epu <- sf_shape %>% dplyr::select(EPU)
+
+ggplot() +
+  geom_sf(data = epu, aes(fill = EPU))
+```
+]
+]
+
+```{r epu_shapes_out, ref.label="epu_shapes", echo=FALSE, out.width = "40%"}
+```
+
+---
+## Working with `sf`: Conversions to and from `Spatial*` classes
+
+* Load shapefile via `rgdal::readOGR()`
+
+.remark-inline-code[
+```{r sp_to_sf, echo = T, eval= T}
+#Read in shapefile using rgdal
+rgdal_shape <- 
+  readOGR(file.path(epu.dir,"EPU_extended.shp"),verbose = F)
+
+{{ class(rgdal_shape) }}
+```
+]
+
+* Convert to `sf` using `methods::as()`
+
+.remark-inline-code[
+```{r sp_to_sf2, echo = T, eval = T}
+
+sf_shape <- as(rgdal_shape, "sf")
+
+# Or the same thing in tidy style
+
+sf_shape <- rgdal_shape %>% 
+  as("sf")
+
+{{ class(sf_shape) }}
+```
+]
+
+---
+## Working with `sf`: Changing Coordinate Reference Systems
+
+**Identify the existing CRS** with `st_crs`
+
+.medium[
+.remark-inline-code[
+```{r st-crs, echo = T, eval = F}
+st_crs(epu)
+```
+]
+]
+
+**Change the CRS** with `st_transform`
+
+.medium[
+.remark-inline-code[
+```{r st-transform, echo = T, eval = F}
+#Pass a proj4string
+p4s <- "+proj=longlat +datum=NAD27 +no_defs"
+st_transform(epu, p4s)
+
+#Pass an EPSG code
+epsg <- 4627
+st_transform(epu, epsg)
+```
+]
+]
+
+---
+## Working with `sf`: Crop to bounding box
+.tiny[
+.remark-inline-code[
+```{r otis_topo, eval=F, echo = T}
+data.dir <- here::here("data")
+load(file.path(data.dir, "topo_4ft.Rdata"))
+
+ymax <-  41.6525; xmin <- -70.5975
+ymin <-  41.6425; xmax <- -70.59
+
+#Define a bounding box
+{{ bbox <- st_bbox(c(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax), 
+                crs = st_crs(topography)) }}
+
+#Turn it into an sf object for plotting
+grid_box <- st_make_grid(bbox) %>% st_cast("POLYGON")
+
+ggplot() +
+  geom_sf(data = topography, aes(color = ELEVATION)) +
+  geom_sf(data = grid_box, alpha = 0, color = "red") +
+  ggtitle("Topography of Francis-Crane Wildlife Area")
+```
+]
+]
+
+```{r otis_topo-out, ref.label="otis_topo", echo=FALSE, out.width = "50%"}
+```
+
+---
+## Working with `sf`: Crop to bounding box
+.tiny[
+.remark-inline-code[
+```{r cropped_topo, eval=F, echo = T}
+
+{{ cropped_topo <- topography %>% st_crop(bbox) }}
+
+ggplot() +
+  geom_sf(data = cropped_topo, aes(color = ELEVATION)) +
+  geom_sf(data = grid_box, alpha = 0, color = "red") +
+  ggtitle("Topography of Francis-Crane Wildlife Area")
+```
+]
+]
+
+```{r cropped_topo-out, ref.label="cropped_topo", echo=FALSE, out.width = "60%"}
+```
+
+---
+
+## Working with `sf`: Crop to arbitrary polygon
+
+.tiny[
+.remark-inline-code[
+```{r int_dif, eval=F, echo = T}
+custom_polygon <- sf::st_read(file.path(data.dir, "Polygon_shapefile", "polygon_for_crop.shp"), 
+                              quiet = T) %>%
+  st_transform(st_crs(topography))
+
+#Intersection
+{{ topo_intersection <- topography %>% st_intersection(custom_polygon) }}
+
+#Difference
+{{ topo_difference <- topography %>% st_difference(custom_polygon) }}
+
+#Plotting
+int <- ggplot() +
+  geom_sf(data = topo_intersection, aes(color = ELEVATION)) +
+  guides(color = F) + ggtitle("Intersection")
+
+difff <- ggplot() +
+  geom_sf(data = topo_difference, aes(color = ELEVATION)) +
+  guides(color = F) + ggtitle("Difference")
+
+int + difff + plot_layout(ncol = 2)
+```
+]
+]
+
+```{r int_dif-out, ref.label="int_dif", echo=FALSE, fig.height = 4.5}
+```
+
+---
+## Working with `sf`: Spatial joins
+.tiny[
+.remark-inline-code[
+```{r join_epu, eval=F, echo = T}
+sf_shape <- st_read(file.path(epu.dir,"EPU_extended.shp"),quiet = T) 
+
+#Get the union of all EPUs
+{{ all_joined <- st_union(sf_shape) }}
+
+#Create a grouping column to union New England EPU polygons
+{{ some_joined <- sf_shape %>% mutate(Region = ifelse(EPU %in% c("GOM","GB","SS"),
+                                "New England",
+                                "Mid-Atlantic")) %>% 
+  group_by(Region) %>% 
+  summarise() }}
+
+all_joined <- ggplot() + geom_sf(data = all_joined, color = "blue") +
+  guides(color = F) 
+
+some_joined <- ggplot() + geom_sf(data = some_joined, aes(color = Region)) +
+  guides(color = F)
+
+all_joined + some_joined + plot_layout(ncol = 2)
+```
+]
+]
+
+```{r join_epu-out, ref.label="join_epu", echo=FALSE, fig.height = 4.5}
+```
+
+---
+## Putting it together 
+.left-column[
+.tiny[
+.remark-inline-code[
+```{r fake_data, eval=F, echo = T}
+load(file = file.path(data.dir, "catch_data.rdata"))
+
+#Turn a data.frame into an sf object
+catch_sf <- st_as_sf(catch, coords = c("X","Y"), crs = st_crs(sf_shape)) 
+
+#Get length quantiles for our catch data
+quantiles <- quantile(catch_sf$length, probs = seq(0,1,0.2))
+
+#Join points into shapefile based on where they fall in the polygon
+catch_sf <- st_join(catch_sf, sf_shape) %>% 
+  mutate(quantiles = dplyr::case_when(length <= quantiles[2] ~ "first",
+                                     length > quantiles[2] & length <= quantiles[3] ~ "second",
+                                     length > quantiles[3] & length <= quantiles[4] ~ "third",
+                                     length > quantiles[4] & length <= quantiles[5] ~ "fourth",
+                                     length > quantiles[5] ~ "fifth"))
+
+catch_sf$quantiles <- factor(catch_sf$quantiles,
+                             levels = c("first","second","third","fourth","fifth"))
+
+#Calculate quantiles for length data
+ggplot() + 
+  geom_sf(data = sf_shape) +
+  geom_sf(data = catch_sf, aes(color = quantiles), show.legend = "point") +
+  guides(color = guide_legend(title = "Length Quantiles")) +
+  theme(legend.position='bottom')
+```
+]
+]
+]
+.right-column[
+```{r fake_data-out, ref.label="fake_data", echo=FALSE}
+```
+]
