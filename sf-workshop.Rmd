@@ -15,7 +15,7 @@ output:
     reveal_plugins: ["notes", "search"]
 ---
 
-```{r setup, echo = F, message = F}
+```{r setup, echo = F, message = F, warning=F}
 library(ggplot2)
 library(sf)
 library(dplyr)
@@ -121,7 +121,7 @@ nc <- st_read(system.file("shape/nc.shp", package="sf"), quiet = T)
 
 ## Getting started: Required scripts and data 
 
-[sf-workshop](https://github.com/seanhardison1/sf-workshop)
+https://github.com/seanhardison1/sf-workshop
 
 ```{r, out.width="100%"}
 knitr::include_graphics(file.path(image.dir, "clone-dir.png"))
@@ -202,6 +202,8 @@ knitr::include_graphics(file.path(image.dir, "sf-data-struc.png"))
 
 
 ???
+**Run view_structure code chunk**
+
 sf: A simple feature
 sfc: simple feature geometry list-column
 sfg: simple feature geometry
@@ -221,6 +223,8 @@ knitr::include_graphics(file.path(image.dir, "sf-data-struc.png"))
 * All features in the `sf` object have a coordinate reference system (CRS)
  * Describes a transformation from a 3D surface to a 2D plane (e.g. globe to paper).
  
+* CRS is defined by `proj4string` and `epsg`
+ 
 ???
 
 * Functions in `sf` all begin with `st_`
@@ -232,6 +236,19 @@ knitr::include_graphics(file.path(image.dir, "sf-data-struc.png"))
 knitr::include_graphics(file.path(image.dir, "simple-features.png"))
 ```
 
+---
+## Geometries and attributes
+
+.medium[
+.remark-inline-code[
+```{r plot-nc, eval=FALSE, echo = T}
+plot(nc)
+```
+]
+]
+
+```{r plot-nc-out, ref.label="plot-nc", echo=FALSE}
+```
 
 ---
 ## Feature geometry types
@@ -244,16 +261,19 @@ knitr::include_graphics(file.path(image.dir, "geometry-types.png"))
 * We can make our own special feature geometry (`sfg`) using the `sf` syntax `sf_[geometry]`
   * For example, `sf_point(c(1,1))`
   
-* Let's make some geometries, starting with the `make_points` code chunk.
 
 .footnote[
 [source](https://r-spatial.github.io/sf/articles/sf1.html)
 ]
 
 ---
+
 ## Feature geometry types: `POLYGON` and `MULTIPOLYGON`
 * `POLYGON` geometries are allowed to have one external ring and zero or more internal rings
 * `MULTIPOLYGON` geometries contain > 1 non-nested polygons
+
+* All individual polygons start and end with the same coordinate pair
+
 
 ```{r , out.width = "70%"}
 knitr::include_graphics(file.path(image.dir, "geometry-types.png"))
@@ -270,9 +290,37 @@ knitr::include_graphics(file.path(image.dir, "smast4.png"))
 ```
 
 ---
+## Feature geometry types
+
+`POINT`: numeric vector  
+  * `c(x,y)`
+  
+`LINESTRING`: A numeric matrix with points in rows
+  * `matrix(data = c(x1,y1,...), nrow = 2)`
+
+`POLYGON`: A list of numeric matrices
+  * `list(matrix(x1, y1,...,x1,y1), nrow  = 2)`
+  
+`MULTIPOINT`: A numeric matrix with points in rows
+* `matrix(data = c(x1,y1,...), nrow = 2)`
+  
+`MULTILINESTRING`: A list of numeric matrices
+ * `list(matrix(x1, y1,...), nrow  = 2)`
+
+`MULTIPOLYGON`: A list of lists of matrices...
+ * `list(list(matrix(x11, y11,...,x11,y11), nrow  = 2), list(matrix(x21, y21,...,x21,y21), nrow  = 2), ...)`
+
+`GEOMETRYCOLLECTION`: A list of `sf` objects
+ * `list(sf_object1, sf_object2, ...)`
+ 
+???
+Mulitpolygon class is special case when there are non-nested polygons
+
+---
+
 ## Advantages to `sfg` structure
 
-* `sf` objects are also of class `data.frame`, meaning `tidyverse` functions can be applied
+* `sf` objects are also of class `data.frame`, meaning `tidyverse` functions can be applied(!)
 
 .pull-left[
 
@@ -298,6 +346,33 @@ plot(wilmington)
 ```
 ]
 
+???
+**Turn to Getting tidy with it code chunk**
+---
+
+## `ggplot2` ft. `sf`
+
+* `ggplot2` uses the `geom_sf` function to visualize `sf` objects
+
+
+
+.medium[
+.remark-inline-code[
+```{r gg-nc,  eval = F, echo = T}
+ggplot() +
+  geom_sf(data = nc, 
+          aes(fill = AREA))
+```
+]
+
+]
+
+```{r gg-nc_out, ref.label="gg-nc", echo=FALSE, fig.width=8}
+```
+
+
+???
+**Turn to ggplot**
 
 ---
 ## Working with `sf`: Reading data
@@ -502,11 +577,10 @@ all_joined + some_joined + plot_layout(ncol = 2)
 ```
 
 ---
-## Putting it together 
-.left-column[
-.tiny[
-.remark-inline-code[
-```{r fake_data, eval=F, echo = T}
+## Putting it together with fake fish
+
+
+```{r fake_data, eval=T, echo = F}
 load(file = file.path(data.dir, "catch_data.rdata"))
 
 #Turn a data.frame into an sf object
@@ -533,10 +607,3 @@ ggplot() +
   guides(color = guide_legend(title = "Length Quantiles")) +
   theme(legend.position='bottom')
 ```
-]
-]
-]
-.right-column[
-```{r fake_data-out, ref.label="fake_data", echo=FALSE}
-```
-]
