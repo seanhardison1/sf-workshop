@@ -1,0 +1,336 @@
+---
+title: "spatial-intro"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, include = T, warning = F)
+
+#A function to install and load missing packages
+
+packages <- c("tidyverse", "sf", "stars", "raster", "here","rgdal", "lwgeom", "gstat",
+              "ncmeta")
+
+installLoadPackages <- function(pkg){
+    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+    if (length(new.pkg)) 
+        install.packages(new.pkg, dependencies = TRUE,repos='http://cran.us.r-project.org')
+    sapply(pkg, require, character.only = TRUE)
+}
+installLoadPackages(packages)
+
+#You'll also need the patchwork package from github!!
+
+# devtools::install_github("thomasp85/patchwork")
+# devtools::install_github("michaeldorman/nngeo")
+library(patchwork)
+
+#Set relative path to data directories here !!
+epu.dir <- here::here("data","EPU_shapefile")
+data.dir <- here::here("data")
+
+```
+
+## Data structures
+
+### Check out the structure of an `sf` object. 
+```{r view_structure}
+nc <- st_read(system.file("shape/nc.shp", package="sf"), quiet = T)
+
+head(nc)
+
+# Note that nc is a collection of simple features, each of which is described by a row
+
+```
+
+### Now see what it looks like
+```{r plot_nc}
+plot(nc)
+```
+
+### Create the simplest simple feature geometry: a `POINT`
+```{r make_points}
+
+point_in_space <- c(1,2) #in XY space
+
+point_geometry <- st_point(point_in_space)
+
+
+point_geometry
+plot(point_geometry)
+```
+
+### Combine multiple points into a `MULTIPOINT` geometry
+
+```{r make_multipoints}
+points_in_space <- rbind(c(3.2,4), c(3,4.6))
+
+multipoint_geometry <- st_multipoint(points_in_space)
+
+multipoint_geometry
+plot(multipoint_geometry)
+```
+
+### Create a `LINESTRING` using the same points
+
+```{r make_linestring}
+linestring_geometry <- st_linestring(points_in_space)
+
+linestring_geometry
+plot(linestring_geometry)
+```
+
+1. Create and plot a `POLYGON` geometry type using the function `st_polygon`
+
+```{r build-polygon}
+
+```
+
+
+2. Create and plot a `GEOMETRYCOLLECTION` geometry type by combining some of the above examples into one.
+
+```{r build-geocol}
+
+```
+
+## Working with `sf`
+
+### Getting `tidy` with it
+
+1. Use your `dplyr` skills to determine the average `AREA` and `PERIMETER` of all North Carolina counties.
+
+```{r getting-tidy}
+
+
+```
+
+2. Plot the top 10 largest counties in terms of `AREA` in North Carolina.
+
+```{r plot-largest}
+
+
+```
+
+### `ggplot2` ft. `sf`
+
+3. Using `ggplot2`, visualize the number of infant births by county between 1974-78 (`BIR74`). Next, visualize how birth rates changed by county between 1974-1978 and 1979-1984 (`BIR79`). 
+
+```{r ggplot-sf}
+
+
+```
+
+
+### Reading spatial data
+
+```{r epu_shapes}
+
+#Read in shapefile using sf
+sf_shape <- 
+  st_read(file.path(epu.dir,"EPU_NOESTUARIES.shp"),quiet = T)
+
+#Read in shapefile using rgdal
+rgdal_shape <-
+  readOGR(file.path(epu.dir,"EPU_NOESTUARIES.shp"),verbose = F)
+
+epu <- sf_shape %>% dplyr::select(EPU)
+plot(epu)
+  
+```
+
+* Check out the class of the shapefile loaded with `rgdal`
+```{r sp_to_sf}
+#Read in shapefile using rgdal
+class(rgdal_shape)
+```
+
+### Identifying existing Coordinate Reference System
+```{r st-crs, echo = TRUE}
+st_crs(epu)
+```
+
+#### Changing the Coordinate Reference System
+```{r st-transform}
+
+#Pass a proj4string
+p4s <- "+proj=longlat +datum=NAD27 +no_defs"
+st_transform(epu, p4s)
+
+#Pass an EPSG code
+epsg <- 4627
+st_transform(epu, epsg)
+```
+
+4. The code below evaluates to a `SpatialPolygonsDataFrame`. Using `as()`, convert the output to an `sf` object. Assign the following `proj4string` to the object: "+proj=longlat +datum=WGS84 +no_defs". Plot the object using `ggplot2`.
+
+```{r convert-polygon}
+load(here::here("data/SpatialPolygonExample.rdata"))
+
+```
+
+### Calculating geometric distances
+
+```{r beer, eval=T, echo = T}
+#Wilmington is here
+wilmy <- nc %>% filter(NAME == "New Hanover") %>% st_centroid() 
+
+#Beer is here
+wicked_weed <- st_geometry(st_point(c(-82.551440,35.591738)))
+st_crs(wicked_weed) <- st_crs(nc)
+
+#Draw a line between beer and Wilmington
+a_long_ways_to_beer <- st_geometry( sf::st_linestring(
+  matrix(rbind(st_coordinates(wilmy), st_coordinates(wicked_weed)), ncol = 2)) )
+st_crs(a_long_ways_to_beer) <- st_crs(nc)
+
+#Calculate the total distance with st_distance
+total_dist <- st_distance(wilmy, wicked_weed)
+
+ggplot() +
+  geom_sf(data = nc) +
+  geom_sf(data = wicked_weed) +
+  geom_sf(data = wilmy) +
+  geom_sf(data = a_long_ways_to_beer, color = "red") +
+  geom_sf_text(data = st_centroid(a_long_ways_to_beer), 
+               label = paste(round(total_dist,2), "m"), nudge_y = -0.2)
+```
+
+5. Go to maps.google.com, find a couple of points, and calculate the distance between them with `st_distance`.
+
+```{r point-distance}
+
+```
+
+
+### Cropping sf objects
+
+#### With a bounding box
+
+6. Crop the `topography` `sf` object to the bounding box defined by `ymin`, `ymax`, `xmin`. and `xmax`. 
+
+```{r otis_topo, eval=T, echo = T}
+
+load(file.path(data.dir, "topo_4ft.Rdata"))
+
+#Define a bounding box
+ymax <-  41.6525; xmin <- -70.5975
+ymin <-  41.6425; xmax <- -70.59
+
+#1. Use st_bbox to define your bounding box. Don't forget to set you CRS!!
+
+#2. Use st_crop to crop the topography object. 
+
+#3. Visualize the output using ggplot2
+
+```
+
+
+#### With an arbitary polygon
+
+7. Use the `sf` polygon that you converted from `SpatialPolygons` class to crop the `topography` `sf` object. Try `st_intersection` and `st_difference`.
+
+```{r ind_diff, eval = T, echo = T}
+
+
+```
+
+### Spatial Joins
+
+8. Read in the shapefile `EPU_NOESTUARIES.shp`, and use `st_union` to join all polygons together. Next, try merging 2/4 polygons in the file using `dplyr` syntax. Visualize the results of boths spatial joins using `ggplot2`.
+
+```{r join_epu, eval=T, echo = T}
+
+
+```
+
+### Putting it all together: An example with fake fish data
+
+```{r fake_fishies}
+load(file = file.path(data.dir, "catch_data.rdata"))
+
+#Turn a data.frame into an sf object
+catch_sf <- st_as_sf(catch, coords = c("X","Y"), crs = st_crs(sf_shape)) 
+
+#Get length quantiles for our catch data
+quantiles <- quantile(catch_sf$length, probs = seq(0,1,0.2))
+
+#Join points into shapefile based on where they fall in the polygon
+catch_sf <- st_join(catch_sf, sf_shape) %>% 
+  mutate(quantiles = dplyr::case_when(length <= quantiles[2] ~ "first",
+                                     length > quantiles[2] & length <= quantiles[3] ~ "second",
+                                     length > quantiles[3] & length <= quantiles[4] ~ "third",
+                                     length > quantiles[4] & length <= quantiles[5] ~ "fourth",
+                                     length > quantiles[5] ~ "fifth"))
+
+catch_sf$quantiles <- factor(catch_sf$quantiles,
+                             levels = c("first","second","third","fourth","fifth"))
+
+#Calculate quantiles for length data
+ggplot() + 
+  geom_sf(data = sf_shape) +
+  geom_sf(data = catch_sf, aes(color = quantiles), show.legend = "point") +
+  guides(color = guide_legend(title = "Length Quantiles")) +
+  theme(legend.position='bottom')
+```
+
+#### Interpolating fake fish lengths with `gstat`
+
+```{r NNI_p1, echo = T}
+
+# Create a raster grid to interpolate over
+r1 <- raster::raster()
+e <- raster::extent(-76.83333, -65.66667, 34, 44.5)
+raster::extent(r1) <- e
+r1[] <- 1
+crs(r1) <- crs(catch_sf)
+ 
+#Convert our object to a SpatialPolygon and then into a raster. 
+spdf <- sf_shape %>%
+  st_union() %>% #Union all polygons
+  st_transform(st_crs(catch_sf)) %>% #Make sure it has the same CRS as the fake fish data.
+  as_Spatial()
+
+polygon_rast <- raster::rasterize(spdf, r1) #Rasterize
+
+#Convert our fake lengths sf object to SpatialPointsDataFrame for model input
+catch_spatial_points <-
+  catch_sf %>% 
+  as_Spatial()
+
+spatial_mod <- gstat::gstat(formula = length~1,
+                            locations = catch_spatial_points, nmax = 5, set = list(idp = 0))
+
+#idp: inverse distance power; when 0, all neighbors weighted equally
+#nmax: number of observations to use for modeling mean length
+
+# Visualize sample spatial autocorrelation
+plot(variogram(spatial_mod))
+
+
+#Predict over the raster space
+nn <- raster::interpolate(r1, spatial_mod)
+
+#Check out the model output
+plot(nn)
+```
+
+```{r NNI_p2, echo = T}
+#Mask the raster according to the original polygon extents
+masked_model_output <- mask(nn, polygon_rast)
+
+stars_output <- stars::st_as_stars(masked_model_output)
+
+ggplot() +
+  geom_stars(data = stars_output) +
+  geom_sf(data = sf_shape, aes(color = EPU), fill = "transparent") 
+```
+
+
+### Your turn!!
+
+9. Convert the following `data.frame` into an `sf` object. Pick a few variables and map them through time using `dplyr` and `ggplot2`. How do the variables differ by depth? And through time?
+
+```{r EcoMon data}
+load(file.path(data.dir, "LME_nutrients_spatial.Rdata"))
+```
+
