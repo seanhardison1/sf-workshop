@@ -24,7 +24,7 @@ library(patchwork)
 library(raster)
 library(stars)
 
-image.dir <- "EDAB_images"
+image.dir <- here::here("docs","EDAB_images")
 r.dir <- here::here("R")
 data.dir <- here::here("data")
 
@@ -141,12 +141,22 @@ knitr::include_graphics(file.path(image.dir, "clone-dir.png"))
 
 * Once `here` is installed, test this by typing `here::here()` into the R console
 
+???
+1. Get packages installed
+2. Run through worksheet document. 
+
 ---
 ## Simple features: Models for things in space
 
 ```{r, out.width="100%"}
 knitr::include_graphics(file.path(image.dir, "smast1.png"))
 ```
+
+???
+What are simple features? Simple features are any object or thing that can be represented by a point in space and an attribute
+
+For example, this building can be represented as a simple feature. It's associated with a latitude longitude pair, and we can assign the attribute "building" to it. 
+
 
 ---
 ## Simple features: Models for things in space
@@ -156,6 +166,9 @@ knitr::include_graphics(file.path(image.dir, "smast1.png"))
 knitr::include_graphics(file.path(image.dir, "smast2.png"))
 ```
 
+???
+We assigned the building a point in space, but simple features can also be described by multiple points, such as this polygon. We might then assign the attribute "green space" to the feature. 
+
 ---
 ## Simple features: Models for things in space
 
@@ -163,12 +176,18 @@ knitr::include_graphics(file.path(image.dir, "smast2.png"))
 knitr::include_graphics(file.path(image.dir, "smast3.png"))
 ```
 
+???
+A third feature could be this road and pier, which we describe spatially as a line.
+
 ---
 ## Simple features: Models for things in space
 
 ```{r, out.width="100%"}
 knitr::include_graphics(file.path(image.dir, "smast4.png"))
 ```
+
+???
+We can also describe all of the these features as a single simple feature, which is referred to as a geometrycollection. 
 
 ---
 ## Simple features: A standard for spatial information
@@ -189,7 +208,7 @@ https://r-spatial.github.io/sf/articles/sf1.html
 
 * Classic methods for dealing with spatial data in R are a pain
 
-  * `SpatialPointsDataFrame`, `SpatialLineDataFrame`, `SpatialPolygonsDataFrame`...
+  * `SpatialPointsDataFrame`, `SpatialLinesDataFrame`, `SpatialPolygonsDataFrame`...
   
 --
   
@@ -197,7 +216,7 @@ https://r-spatial.github.io/sf/articles/sf1.html
 
 --
 
-* In `sf-workshop-notes.Rmd`, run the `view_structure` code chunk
+* In `sf-worksheet.Rmd`, run the `view_structure` code chunk
 
 ```{r, out.width="70%"}
 knitr::include_graphics(file.path(image.dir, "sf-data-struc.png"))
@@ -207,8 +226,11 @@ knitr::include_graphics(file.path(image.dir, "sf-data-struc.png"))
 ???
 **Run view_structure code chunk**
 
+nc is an sf object containing polygons for all counties in the state of north Carolina.
+
 sf: A simple feature
 sfc: simple feature geometry list-column
+
 sfg: simple feature geometry
 
 ---
@@ -317,7 +339,7 @@ knitr::include_graphics(file.path(image.dir, "smast4.png"))
  * `list(sf_object1, sf_object2, ...)`
  
 ???
-Mulitpolygon class is special case when there are non-nested polygons
+Multipolygon class is special case when there are non-nested polygons
 
 ---
 

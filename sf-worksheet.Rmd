@@ -195,7 +195,7 @@ ggplot() +
                label = paste(round(total_dist,2), "m"), nudge_y = -0.2)
 ```
 
-5. Go to maps.google.com, find a couple of points, and calculate the distance between them with `st_distance`.
+5. `st_distance` is just one of multiple `sf` geometric measurement functions, which also include `st_area` and `st_length`. Using `st_area`, calculate the area of the Mid-Atlantic Bight polygon in the `sf_shape` object.
 
 ```{r point-distance}
 
@@ -271,6 +271,9 @@ ggplot() +
   geom_sf(data = catch_sf, aes(color = quantiles), show.legend = "point") +
   guides(color = guide_legend(title = "Length Quantiles")) +
   theme(legend.position='bottom')
+
+ggplot() +
+  geom_sf(data = catch_sf %>% filter(EPU == "MAB"))
 ```
 
 #### Interpolating fake fish lengths with `gstat`
@@ -282,29 +285,28 @@ r1 <- raster::raster()
 e <- raster::extent(-76.83333, -65.66667, 34, 44.5)
 raster::extent(r1) <- e
 r1[] <- 1
-crs(r1) <- crs(catch_sf)
- 
+raster::crs(r1) <- raster::crs(catch_sf)
+
 #Convert our object to a SpatialPolygon and then into a raster. 
 spdf <- sf_shape %>%
   st_union() %>% #Union all polygons
   st_transform(st_crs(catch_sf)) %>% #Make sure it has the same CRS as the fake fish data.
   as_Spatial()
 
-polygon_rast <- raster::rasterize(spdf, r1) #Rasterize
+polygon_rast <- raster::rasterize(spdf, r1) #Rasterize to mask output
 
 #Convert our fake lengths sf object to SpatialPointsDataFrame for model input
 catch_spatial_points <-
   catch_sf %>% 
   as_Spatial()
 
+# Fit a model to estimate fish length at unsampled locations
+# When nmax = 1, the model is a nearest neighbor model: predicted cells take on the value of their nearest neighbor
+# When nmax > 1 and idp = 0, predictions are the mean of the two nearest neighbors w/o distance penalty.
+# When idp > 0, a distance penalty of order idp is applied for a weighted mean
+
 spatial_mod <- gstat::gstat(formula = length~1,
-                            locations = catch_spatial_points, nmax = 5, set = list(idp = 0))
-
-#idp: inverse distance power; when 0, all neighbors weighted equally
-#nmax: number of observations to use for modeling mean length
-
-# Visualize sample spatial autocorrelation
-plot(variogram(spatial_mod))
+                            locations = catch_spatial_points, nmax = 2, set = list(idp = 0))
 
 
 #Predict over the raster space
@@ -312,6 +314,7 @@ nn <- raster::interpolate(r1, spatial_mod)
 
 #Check out the model output
 plot(nn)
+plot(catch_spatial_points, add = T)
 ```
 
 ```{r NNI_p2, echo = T}

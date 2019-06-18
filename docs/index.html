@@ -108,7 +108,7 @@ class: right, middle, my-title, title-slide
 
 https://github.com/seanhardison1/sf-workshop
 
-&lt;img src="EDAB_images/clone-dir.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/clone-dir.png" width="100%" style="display: block; margin: auto;" /&gt;
 
 * Clone or download the directory
 
@@ -121,26 +121,45 @@ https://github.com/seanhardison1/sf-workshop
 
 * Once `here` is installed, test this by typing `here::here()` into the R console
 
----
-## Simple features: Models for things in space
-
-&lt;img src="EDAB_images/smast1.png" width="100%" style="display: block; margin: auto;" /&gt;
-
----
-## Simple features: Models for things in space
-
-
-&lt;img src="EDAB_images/smast2.png" width="100%" style="display: block; margin: auto;" /&gt;
+???
+1. Get packages installed
+2. Run through worksheet document. 
 
 ---
 ## Simple features: Models for things in space
 
-&lt;img src="EDAB_images/smast3.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/smast1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+???
+What are simple features? Simple features are any object or thing that can be represented by a point in space and an attribute
+
+For example, this building can be represented as a simple feature. It's associated with a latitude longitude pair, and we can assign the attribute "building" to it. 
+
 
 ---
 ## Simple features: Models for things in space
 
-&lt;img src="EDAB_images/smast4.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/smast2.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+???
+We assigned the building a point in space, but simple features can also be described by multiple points, such as this polygon. We might then assign the attribute "green space" to the feature. 
+
+---
+## Simple features: Models for things in space
+
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/smast3.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+???
+A third feature could be this road and pier, which we describe spatially as a line.
+
+---
+## Simple features: Models for things in space
+
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/smast4.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+???
+We can also describe all of the these features as a single simple feature, which is referred to as a geometrycollection. 
 
 ---
 ## Simple features: A standard for spatial information
@@ -148,7 +167,7 @@ https://github.com/seanhardison1/sf-workshop
 * A data structure with spatial `geometries` and non-spatial `attributes`
 * Used in spatial databases and commercial GIS applications (e.g. PostGIS and ArcGIS)
 
-&lt;img src="EDAB_images/simple-features.png" width="70%" style="display: block; margin: auto;" /&gt;
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/simple-features.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 .footnote[
 https://r-spatial.github.io/sf/articles/sf1.html
@@ -159,7 +178,7 @@ https://r-spatial.github.io/sf/articles/sf1.html
 
 * Classic methods for dealing with spatial data in R are a pain
 
-  * `SpatialPointsDataFrame`, `SpatialLineDataFrame`, `SpatialPolygonsDataFrame`...
+  * `SpatialPointsDataFrame`, `SpatialLinesDataFrame`, `SpatialPolygonsDataFrame`...
   
 --
   
@@ -167,23 +186,26 @@ https://r-spatial.github.io/sf/articles/sf1.html
 
 --
 
-* In `sf-workshop-notes.Rmd`, run the `view_structure` code chunk
+* In `sf-worksheet.Rmd`, run the `view_structure` code chunk
 
-&lt;img src="EDAB_images/sf-data-struc.png" width="70%" style="display: block; margin: auto;" /&gt;
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/sf-data-struc.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 
 ???
 **Run view_structure code chunk**
 
+nc is an sf object containing polygons for all counties in the state of north Carolina.
+
 sf: A simple feature
 sfc: simple feature geometry list-column
+
 sfg: simple feature geometry
 
 ---
 ## Simple features in R using `sf`
 
 An object of class `sf`:
-&lt;img src="EDAB_images/sf-data-struc.png" width="70%" style="display: block; margin: auto;" /&gt;
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/sf-data-struc.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 * Features in the collection are described by rows in the data.frame
 
@@ -201,7 +223,7 @@ An object of class `sf`:
 ---
 ## Feature geometry types
 
-&lt;img src="EDAB_images/simple-features.png" width="80%" style="display: block; margin: auto;" /&gt;
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/simple-features.png" width="80%" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Geometries and attributes
@@ -221,7 +243,7 @@ plot(nc)
 ## Feature geometry types
 * All geometry types are defined by groups of point coordinates
 
-&lt;img src="EDAB_images/geometry-types.png" width="70%" style="display: block; margin: auto;" /&gt;
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/geometry-types.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 * We can make our own special feature geometry (`sfg`) using the `sf` syntax `sf_[geometry]`
   * For example, `sf_point(c(1,1))`
@@ -240,7 +262,7 @@ plot(nc)
 * All individual polygons start and end with the same coordinate pair
 
 
-&lt;img src="EDAB_images/geometry-types.png" width="70%" style="display: block; margin: auto;" /&gt;
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/geometry-types.png" width="70%" style="display: block; margin: auto;" /&gt;
 
 
 ---
@@ -248,7 +270,7 @@ plot(nc)
 
 * If a feature (i.e. a row) contains more than one geometry type, it is a `GEOMETRYCOLLECTION`
 
-&lt;img src="EDAB_images/smast4.png" width="100%" style="display: block; margin: auto;" /&gt;
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/smast4.png" width="100%" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Feature geometry types
@@ -275,7 +297,7 @@ plot(nc)
  * `list(sf_object1, sf_object2, ...)`
  
 ???
-Mulitpolygon class is special case when there are non-nested polygons
+Multipolygon class is special case when there are non-nested polygons
 
 ---
 
@@ -612,8 +634,8 @@ all_joined + some_joined + plot_layout(ncol = 2)
 **NOAA Oceans and Climate Branch Ecosystem Monitoring Cruise Data (through June 2018)**
 
 .table[
-<div id="htmlwidget-1c5df91a6ae042700d23" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1c5df91a6ae042700d23">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21"],["Cruise identifier","Cruise identifier","Station number","CTD cast number","Sample bottle number","Sample date","Sample time","Latitude","Longitude","Depth of station","Depth of sample","Water pressure","Water temperature","Water salinity","Potential density at surface pressure","Dissolved oxygen","Silicic acid concentration","Total nitrate and nitrite concentration","Ammonia concentration","Phosphate concentration","Dissolved oxygen"],["EXPOCODE","Cruise_ID","STNNBR","CASTNO","BTLNBR","Date_UTC","Time_UTC","Latitude","Longitude","Depth_station","Depth_sampling","CTDPRS","CTDTEMP","CTDSAL","Sigma.Theta","CTDOXY","SILCAT","NITRIT+NITRAT","AMMMONIA","PHSPHT","CTDOXYMOL"],["","","","","","MM/DD/YYYY","hh:mm","decimal degrees","decimal degrees","m","m","decibars","°C","PSS-78","kg m^-3^","mg L^-1^","microM","microM","microM","microM","micromol kg^-1^"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Variable<\/th>\n      <th>Names<\/th>\n      <th>Units<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"columnDefs":[{"orderable":false,"targets":0}]}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-b221dd601bc110589cd8" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-b221dd601bc110589cd8">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21"],["Cruise identifier","Cruise identifier","Station number","CTD cast number","Sample bottle number","Sample date","Sample time","Latitude","Longitude","Depth of station","Depth of sample","Water pressure","Water temperature","Water salinity","Potential density at surface pressure","Dissolved oxygen","Silicic acid concentration","Total nitrate and nitrite concentration","Ammonia concentration","Phosphate concentration","Dissolved oxygen"],["EXPOCODE","Cruise_ID","STNNBR","CASTNO","BTLNBR","Date_UTC","Time_UTC","Latitude","Longitude","Depth_station","Depth_sampling","CTDPRS","CTDTEMP","CTDSAL","Sigma.Theta","CTDOXY","SILCAT","NITRIT+NITRAT","AMMMONIA","PHSPHT","CTDOXYMOL"],["","","","","","MM/DD/YYYY","hh:mm","decimal degrees","decimal degrees","m","m","decibars","°C","PSS-78","kg m^-3^","mg L^-1^","microM","microM","microM","microM","micromol kg^-1^"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Variable<\/th>\n      <th>Names<\/th>\n      <th>Units<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"columnDefs":[{"orderable":false,"targets":0}]}},"evals":[],"jsHooks":[]}</script>
 ]
 
 
