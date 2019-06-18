@@ -24,7 +24,7 @@ library(patchwork)
 library(raster)
 library(stars)
 
-image.dir <- here::here("docs","EDAB_images")
+image.dir <- "./EDAB_images"
 r.dir <- here::here("R")
 data.dir <- here::here("data")
 
