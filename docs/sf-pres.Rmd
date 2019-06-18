@@ -210,7 +210,7 @@ https://r-spatial.github.io/sf/articles/sf1.html
 ---
 ## Simple features in R using `sf`
 
-* Classic methods for dealing with spatial data in R are a pain
+* Classic methods for dealing with spatial data in R can be confusing
 
   * `SpatialPointsDataFrame`, `SpatialLinesDataFrame`, `SpatialPolygonsDataFrame`...
   
@@ -226,6 +226,9 @@ https://r-spatial.github.io/sf/articles/sf1.html
 knitr::include_graphics(file.path(image.dir, "sf-data-struc.png"))
 ```
 
+.footnote[
+[source](https://r-spatial.github.io/sf/articles/sf1.html)
+]
 
 ???
 **Run view_structure code chunk**
@@ -253,6 +256,10 @@ knitr::include_graphics(file.path(image.dir, "sf-data-struc.png"))
  * Describes a transformation from a 3D surface to a 2D plane (e.g. globe to paper).
  
 * CRS is defined by `proj4string` and `epsg`
+
+.footnote[
+[source](https://r-spatial.github.io/sf/articles/sf1.html)
+]
  
 ???
 
