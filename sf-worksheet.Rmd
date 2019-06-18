@@ -63,7 +63,7 @@ plot(point_geometry)
 ### Combine multiple points into a `MULTIPOINT` geometry
 
 ```{r make_multipoints}
-points_in_space <- rbind(c(3.2,4), c(3,4.6))
+points_in_space <- rbind(c(3,5), c(4,6))
 
 multipoint_geometry <- st_multipoint(points_in_space)
 
@@ -84,6 +84,7 @@ plot(linestring_geometry)
 
 ```{r build-polygon}
 
+
 ```
 
 
@@ -91,13 +92,14 @@ plot(linestring_geometry)
 
 ```{r build-geocol}
 
+
 ```
 
 ## Working with `sf`
 
 ### Getting `tidy` with it
 
-1. Use your `dplyr` skills to determine the average `AREA` and `PERIMETER` of all North Carolina counties.
+1. Use your `dplyr` skills to determine the average `AREA` and `PERIMETER` of North Carolina counties that had more than 500 births between 1974-1979 (`BIR74`).
 
 ```{r getting-tidy}
 
@@ -271,9 +273,6 @@ ggplot() +
   geom_sf(data = catch_sf, aes(color = quantiles), show.legend = "point") +
   guides(color = guide_legend(title = "Length Quantiles")) +
   theme(legend.position='bottom')
-
-ggplot() +
-  geom_sf(data = catch_sf %>% filter(EPU == "MAB"))
 ```
 
 #### Interpolating fake fish lengths with `gstat`
@@ -306,7 +305,8 @@ catch_spatial_points <-
 # When idp > 0, a distance penalty of order idp is applied for a weighted mean
 
 spatial_mod <- gstat::gstat(formula = length~1,
-                            locations = catch_spatial_points, nmax = 2, set = list(idp = 0))
+                            locations = catch_spatial_points, 
+                            nmax = 5, set = list(idp = 0))
 
 
 #Predict over the raster space
