@@ -69,6 +69,10 @@ class: right, middle, my-title, title-slide
   font-size: 80% !important;
 }
 
+.medium { /*Change made here*/
+  font-size: 80% !important;
+}
+
 .tiny .remark-code { /*Change made here*/
   font-size: 60% !important;
 }
@@ -274,27 +278,27 @@ plot(nc)
 
 ---
 ## Feature geometry types
-
+.medium[
 `POINT`: numeric vector  
   * `c(x,y)`
   
 `LINESTRING`: A numeric matrix with points in rows
-  * `matrix(data = c(x1,y1,...), ncol = 2)`
-
+  * `matrix(data = c(x1,y1,...), ncol = 2, byrow = T)`
 `POLYGON`: A list of numeric matrices
-  * `list(matrix(x1, y1,...,x1,y1), ncol = 2)`
+  * `list(matrix(x1, y1,...,x1,y1), ncol = 2, byrow = T)`
   
 `MULTIPOINT`: A numeric matrix with points in rows
-* `matrix(data = c(x1,y1,...), ncol = 2)`
+* `matrix(data = c(x1,y1,...), ncol = 2, byrow = T)`
   
 `MULTILINESTRING`: A list of numeric matrices
- * `list(matrix(x1, y1,...), ncol  = 2)`
+ * `list(matrix(x1, y1,...), ncol  = 2, byrow = T)`
 
 `MULTIPOLYGON`: A list of lists of matrices...
- * `list(list(matrix(x11, y11,...,x11,y11), ncol  = 2), list(matrix(x21, y21,...,x21,y21), ncol  = 2), ...)`
+ * `list(list(matrix(c(x11, y11,...,x11,y11), ncol  = 2, byrow = T)), list(matrix(c(x11, y11,...,x11,y11), ncol  = 2, byrow = T)), ...)`
 
 `GEOMETRYCOLLECTION`: A list of `sf` objects
  * `list(sf_object1, sf_object2, ...)`
+ ]
  
 ???
 Multipolygon class is special case when there are non-nested polygons
@@ -634,8 +638,8 @@ all_joined + some_joined + plot_layout(ncol = 2)
 **NOAA Oceans and Climate Branch Ecosystem Monitoring Cruise Data (through June 2018)**
 
 .table[
-<div id="htmlwidget-4600459bd2e301c1465b" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-4600459bd2e301c1465b">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21"],["Cruise identifier","Cruise identifier","Station number","CTD cast number","Sample bottle number","Sample date","Sample time","Latitude","Longitude","Depth of station","Depth of sample","Water pressure","Water temperature","Water salinity","Potential density at surface pressure","Dissolved oxygen","Silicic acid concentration","Total nitrate and nitrite concentration","Ammonia concentration","Phosphate concentration","Dissolved oxygen"],["EXPOCODE","Cruise_ID","STNNBR","CASTNO","BTLNBR","Date_UTC","Time_UTC","Latitude","Longitude","Depth_station","Depth_sampling","CTDPRS","CTDTEMP","CTDSAL","Sigma.Theta","CTDOXY","SILCAT","NITRIT+NITRAT","AMMMONIA","PHSPHT","CTDOXYMOL"],["","","","","","MM/DD/YYYY","hh:mm","decimal degrees","decimal degrees","m","m","decibars","°C","PSS-78","kg m^-3^","mg L^-1^","microM","microM","microM","microM","micromol kg^-1^"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Variable<\/th>\n      <th>Names<\/th>\n      <th>Units<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"columnDefs":[{"orderable":false,"targets":0}]}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-f226738eb78294ba5876" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-f226738eb78294ba5876">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21"],["Cruise identifier","Cruise identifier","Station number","CTD cast number","Sample bottle number","Sample date","Sample time","Latitude","Longitude","Depth of station","Depth of sample","Water pressure","Water temperature","Water salinity","Potential density at surface pressure","Dissolved oxygen","Silicic acid concentration","Total nitrate and nitrite concentration","Ammonia concentration","Phosphate concentration","Dissolved oxygen"],["EXPOCODE","Cruise_ID","STNNBR","CASTNO","BTLNBR","Date_UTC","Time_UTC","Latitude","Longitude","Depth_station","Depth_sampling","CTDPRS","CTDTEMP","CTDSAL","Sigma.Theta","CTDOXY","SILCAT","NITRIT+NITRAT","AMMMONIA","PHSPHT","CTDOXYMOL"],["","","","","","MM/DD/YYYY","hh:mm","decimal degrees","decimal degrees","m","m","decibars","°C","PSS-78","kg m^-3^","mg L^-1^","microM","microM","microM","microM","micromol kg^-1^"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Variable<\/th>\n      <th>Names<\/th>\n      <th>Units<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"columnDefs":[{"orderable":false,"targets":0}]}},"evals":[],"jsHooks":[]}</script>
 ]
 
 

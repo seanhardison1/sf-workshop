@@ -87,6 +87,10 @@ nc <- st_read(system.file("shape/nc.shp", package="sf"), quiet = T)
   font-size: 80% !important;
 }
 
+.medium { /*Change made here*/
+  font-size: 80% !important;
+}
+
 .tiny .remark-code { /*Change made here*/
   font-size: 60% !important;
 }
@@ -316,27 +320,27 @@ knitr::include_graphics(file.path(image.dir, "smast4.png"))
 
 ---
 ## Feature geometry types
-
+.medium[
 `POINT`: numeric vector  
   * `c(x,y)`
   
 `LINESTRING`: A numeric matrix with points in rows
-  * `matrix(data = c(x1,y1,...), ncol = 2)`
-
+  * `matrix(data = c(x1,y1,...), ncol = 2, byrow = T)`
 `POLYGON`: A list of numeric matrices
-  * `list(matrix(x1, y1,...,x1,y1), ncol = 2)`
+  * `list(matrix(x1, y1,...,x1,y1), ncol = 2, byrow = T)`
   
 `MULTIPOINT`: A numeric matrix with points in rows
-* `matrix(data = c(x1,y1,...), ncol = 2)`
+* `matrix(data = c(x1,y1,...), ncol = 2, byrow = T)`
   
 `MULTILINESTRING`: A list of numeric matrices
- * `list(matrix(x1, y1,...), ncol  = 2)`
+ * `list(matrix(x1, y1,...), ncol  = 2, byrow = T)`
 
 `MULTIPOLYGON`: A list of lists of matrices...
- * `list(list(matrix(x11, y11,...,x11,y11), ncol  = 2), list(matrix(x21, y21,...,x21,y21), ncol  = 2), ...)`
+ * `list(list(matrix(c(x11, y11,...,x11,y11), ncol  = 2, byrow = T)), list(matrix(c(x11, y11,...,x11,y11), ncol  = 2, byrow = T)), ...)`
 
 `GEOMETRYCOLLECTION`: A list of `sf` objects
  * `list(sf_object1, sf_object2, ...)`
+ ]
  
 ???
 Multipolygon class is special case when there are non-nested polygons
