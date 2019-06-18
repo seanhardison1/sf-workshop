@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>sf: Simple features in R</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Sean Hardison   Ecosystem Dynamics and Assessment   Integrated Statistics &amp; Northeast Fisheries Science Center" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <script src="libs/htmlwidgets/htmlwidgets.js"></script>
+    <script src="libs/jquery/jquery.min.js"></script>
+    <link href="libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+    <script src="libs/datatables-binding/datatables.js"></script>
+    <link href="libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="libs/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+    <script src="libs/dt-core/js/jquery.dataTables.min.js"></script>
+    <link href="libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+    <script src="libs/crosstalk/js/crosstalk.min.js"></script>
+    <link rel="stylesheet" href="libs/EDAB_theme.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: right, middle, my-title, title-slide
+
+# <code>sf</code>: Simple features in R
+### Sean Hardison <br /> Ecosystem Dynamics and Assessment <br /> Integrated Statistics &amp; Northeast Fisheries Science Center
+
+---
+
+
+
+
+&lt;style type="text/css"&gt;
+/* custom.css */
+.left-code {
+  color: #777;
+  width: 38%;
+  height: 92%;
+  float: left;
+}
+.right-plot {
+  width: 60%;
+  float: right;
+  padding-left: 1%;
+}
+.plot-callout {
+  height: 225px;
+  width: 450px;
+  bottom: 5%;
+  right: 5%;
+  position: absolute;
+  padding: 0px;
+  z-index: 100;
+}
+.plot-callout img {
+  width: 100%;
+  border: 4px solid #23373B;
+}
+.remark-slide-content {
+  font-size: 20px;
+  padding: 20px 80px 20px 80px;
+}
+.remark-code, .remark-inline-code {
+  background: #f0f0f0;
+}
+.remark-code {
+  font-size: 20px;
+}
+
+.medium .remark-code { /*Change made here*/
+  font-size: 80% !important;
+}
+
+.tiny .remark-code { /*Change made here*/
+  font-size: 60% !important;
+}
+&lt;/style&gt;
+
+# Today's workshop
+
+.pull-left[
+* Introduction to simple features 
+
+* Interacting with simple features in R using `sf`
+
+* `sf` geometry types
+
+* Common `sf` operations and plotting
+
+* Integration with the `tidyverse`
+
+* Example analyses
+
+]
+
+.pull-right[
+
+![r-sf](https://user-images.githubusercontent.com/520851/34887433-ce1d130e-f7c6-11e7-83fc-d60ad4fae6bd.gif)
+
+]
+
+.footnote[
+  Pebesma, E., 2018. Simple Features for R: Standardized Support for Spatial Vector
+  Data. The R Journal 10 (1), 439-446, https://doi.org/10.32614/RJ-2018-009
+]
+
+---
+
+## Getting started: Required scripts and data 
+
+https://github.com/seanhardison1/sf-workshop
+
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/clone-dir.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+* Clone or download the directory
+
+* Open `sf-workshop.Rproj`
+
+* Open `sf-worksheet.Rmd`
+
+--
+* Anything loaded/saved/sourced in this document uses the `here` package to determine its location relative to the `.Rproj` file.
+
+* Once `here` is installed, test this by typing `here::here()` into the R console
+
+???
+1. Get packages installed
+2. Run through worksheet document. 
+
+---
+## Simple features: Models for things in space
+
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/smast1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+???
+What are simple features? Simple features are any object or thing that can be represented by a point in space and an attribute
+
+For example, this building can be represented as a simple feature. It's associated with a latitude longitude pair, and we can assign the attribute "building" to it. 
+
+
+---
+## Simple features: Models for things in space
+
+
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/smast2.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+???
+We assigned the building a point in space, but simple features can also be described by multiple points, such as this polygon. We might then assign the attribute "green space" to the feature. 
+
+---
+## Simple features: Models for things in space
+
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/smast3.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+???
+A third feature could be this road and pier, which we describe spatially as a line.
+
+---
+## Simple features: Models for things in space
+
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/smast4.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+???
+We can also describe all of the these features as a single simple feature, which is referred to as a geometrycollection. 
+
+---
+## Simple features: A standard for spatial information
+
+* A data structure with spatial `geometries` and non-spatial `attributes`
+* Used in spatial databases and commercial GIS applications (e.g. PostGIS and ArcGIS)
+
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/simple-features.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+.footnote[
+https://r-spatial.github.io/sf/articles/sf1.html
+]
+
+---
+## Simple features in R using `sf`
+
+* Classic methods for dealing with spatial data in R are a pain
+
+  * `SpatialPointsDataFrame`, `SpatialLinesDataFrame`, `SpatialPolygonsDataFrame`...
+  
+--
+  
+* `sf` simplifies this experience while taking advantage of widely used standards
+
+--
+
+* In `sf-worksheet.Rmd`, run the `view_structure` code chunk
+
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/sf-data-struc.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+
+???
+**Run view_structure code chunk**
+
+nc is an sf object containing polygons for all counties in the state of north Carolina.
+
+sf: A simple feature
+sfc: simple feature geometry list-column
+
+sfg: simple feature geometry
+
+---
+## Simple features in R using `sf`
+
+An object of class `sf`:
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/sf-data-struc.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+* Features in the collection are described by rows in the data.frame
+
+* A column named `geometry` describes the spatial aspect of each feature
+
+* All features in the `sf` object have a coordinate reference system (CRS)
+ * Describes a transformation from a 3D surface to a 2D plane (e.g. globe to paper).
+ 
+* CRS is defined by `proj4string` and `epsg`
+ 
+???
+
+* Functions in `sf` all begin with `st_`
+
+---
+## Feature geometry types
+
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/simple-features.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+## Geometries and attributes
+
+.medium[
+.remark-inline-code[
+
+```r
+plot(nc)
+```
+]
+]
+
+&lt;img src="sf-pres_files/figure-html/plot-nc-out-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+## Feature geometry types
+* All geometry types are defined by groups of point coordinates
+
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/geometry-types.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+* We can make our own special feature geometry (`sfg`) using the `sf` syntax `sf_[geometry]`
+  * For example, `sf_point(c(1,1))`
+  
+
+.footnote[
+[source](https://r-spatial.github.io/sf/articles/sf1.html)
+]
+
+---
+
+## Feature geometry types: `POLYGON` and `MULTIPOLYGON`
+* `POLYGON` geometries are allowed to have one external ring and zero or more internal rings
+* `MULTIPOLYGON` geometries contain &gt; 1 non-nested polygons
+
+* All individual polygons start and end with the same coordinate pair
+
+
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/geometry-types.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+
+---
+## A special type of geometry: `GEOMETRYCOLLECTION`
+
+* If a feature (i.e. a row) contains more than one geometry type, it is a `GEOMETRYCOLLECTION`
+
+&lt;img src="/Users/seanhardison/Documents/git/sf-workshop/docs/EDAB_images/smast4.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+---
+## Feature geometry types
+
+`POINT`: numeric vector  
+  * `c(x,y)`
+  
+`LINESTRING`: A numeric matrix with points in rows
+  * `matrix(data = c(x1,y1,...), ncol = 2)`
+
+`POLYGON`: A list of numeric matrices
+  * `list(matrix(x1, y1,...,x1,y1), ncol = 2)`
+  
+`MULTIPOINT`: A numeric matrix with points in rows
+* `matrix(data = c(x1,y1,...), ncol = 2)`
+  
+`MULTILINESTRING`: A list of numeric matrices
+ * `list(matrix(x1, y1,...), ncol  = 2)`
+
+`MULTIPOLYGON`: A list of lists of matrices...
+ * `list(list(matrix(x11, y11,...,x11,y11), ncol  = 2), list(matrix(x21, y21,...,x21,y21), ncol  = 2), ...)`
+
+`GEOMETRYCOLLECTION`: A list of `sf` objects
+ * `list(sf_object1, sf_object2, ...)`
+ 
+???
+Multipolygon class is special case when there are non-nested polygons
+
+---
+
+## Advantages to `sfg` structure
+
+* `sf` objects are also of class `data.frame`, meaning `tidyverse` functions can be applied(!)
+
+.pull-left[
+
+.medium[
+.remark-inline-code[
+
+```r
+library(dplyr)
+
+wilmington &lt;- nc %&gt;% 
+  filter(NAME == "New Hanover")
+
+plot(wilmington)
+```
+]
+]
+
+* Note that all associated attributes are plotted for a given geometry
+
+]
+
+.pull-right[
+&lt;img src="sf-pres_files/figure-html/plot-label-out-1.png" style="display: block; margin: auto;" /&gt;
+]
+
+???
+**Turn to Getting tidy with it code chunk**
+---
+
+## `ggplot2` ft. `sf`
+
+* `ggplot2` uses the `geom_sf` function to visualize `sf` objects
+
+
+
+.medium[
+.remark-inline-code[
+
+```r
+ggplot() +
+  geom_sf(data = nc, 
+          aes(fill = AREA))
+```
+]
+
+]
+
+&lt;img src="sf-pres_files/figure-html/gg-nc_out-1.png" style="display: block; margin: auto;" /&gt;
+
+
+???
+**Turn to ggplot**
+
+---
+## Working with `sf`: Reading data
+
+.tiny[
+.remark-inline-code[
+
+```r
+#Set relative path to data directory
+epu.dir &lt;- here::here("data","EPU_shapefile")
+
+#Read in shapefile using sf
+*  sf_shape &lt;- 
+*  st_read(file.path(epu.dir,"EPU_extended.shp"),quiet = T) 
+
+#Read in shapefile using rgdal
+rgdal_shape &lt;- 
+  readOGR(file.path(epu.dir,"EPU_extended.shp"),verbose = F)
+
+epu &lt;- sf_shape %&gt;% dplyr::select(EPU)
+
+ggplot() +
+  geom_sf(data = epu, aes(fill = EPU))
+```
+]
+]
+
+&lt;img src="sf-pres_files/figure-html/epu_shapes_out-1.png" width="40%" style="display: block; margin: auto;" /&gt;
+---
+## Raster data with the `stars` package
+
+.tiny[
+.remark-inline-code[
+
+```r
+challenger_deep &lt;- raster::raster(file.path(data.dir, "challenger_deep.nc")) %&gt;% 
+  st_as_stars()
+
+chal_deep &lt;- st_point(c(142.20205,11.332417))
+
+ggplot() + 
+  geom_stars(data = challenger_deep) +
+  scale_fill_gradientn(colours = terrain.colors(20)) +
+  
+  geom_sf(data  = chal_deep) +
+  geom_sf_text(data = chal_deep, aes(label = "Challenger Deep (-10,928 m)"), 
+               nudge_y = 0.05, nudge_x = 0.05) + 
+  ggtitle("Challenger Deep")
+```
+]
+]
+
+&lt;img src="sf-pres_files/figure-html/mariana_trench_out-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+---
+## Working with `sf`: Conversions to and from `Spatial*` classes
+
+* Load shapefile via `rgdal::readOGR()`
+
+.remark-inline-code[
+
+```r
+#Read in shapefile using rgdal
+rgdal_shape &lt;- 
+  readOGR(file.path(epu.dir,"EPU_extended.shp"),verbose = F)
+
+* class(rgdal_shape) 
+```
+
+```
+## [1] "SpatialPolygonsDataFrame"
+## attr(,"package")
+## [1] "sp"
+```
+]
+
+* Convert to `sf` using `methods::as()`
+
+.remark-inline-code[
+
+```r
+sf_shape &lt;- as(rgdal_shape, "sf")
+
+# Or the same thing in tidy style
+
+sf_shape &lt;- rgdal_shape %&gt;% 
+  as("sf")
+
+* class(sf_shape) 
+```
+
+```
+## [1] "sf"         "data.frame"
+```
+]
+
+---
+## Working with `sf`: Changing Coordinate Reference Systems
+
+**Identify the existing CRS** with `st_crs`
+
+.medium[
+.remark-inline-code[
+
+```r
+st_crs(epu)
+```
+]
+]
+
+**Change the CRS** with `st_transform`
+
+.medium[
+.remark-inline-code[
+
+```r
+#Pass a proj4string
+p4s &lt;- "+proj=longlat +datum=NAD27 +no_defs"
+st_transform(epu, p4s)
+
+#Pass an EPSG code
+epsg &lt;- 4627
+st_transform(epu, epsg)
+```
+]
+]
+
+---
+## Working with `sf`: Calculating geometric distance to beer
+
+.tiny[
+.remark-inline-code[
+
+```r
+#Wilmington is here
+wilmy &lt;- nc %&gt;% filter(NAME == "New Hanover") %&gt;% st_centroid() 
+
+#Beer is here
+wicked_weed &lt;- st_geometry(st_point(c(-82.551440,35.591738)))
+st_crs(wicked_weed) &lt;- st_crs(nc)
+
+#Draw a line between beer and Wilmington
+a_long_ways_to_beer &lt;- st_geometry( sf::st_linestring(
+  matrix(rbind(st_coordinates(wilmy), st_coordinates(wicked_weed)), ncol = 2)) )
+
+st_crs(a_long_ways_to_beer) &lt;- st_crs(nc)
+
+#Calculate the total distance with st_distance
+* total_dist &lt;- st_distance(wilmy, wicked_weed) 
+```
+]
+]
+
+&lt;img src="sf-pres_files/figure-html/beer-out-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+## Working with `sf`: Crop to bounding box
+.tiny[
+.remark-inline-code[
+
+```r
+data.dir &lt;- here::here("data")
+load(file.path(data.dir, "topo_4ft.Rdata"))
+
+ymax &lt;-  41.6525; xmin &lt;- -70.5975
+ymin &lt;-  41.6425; xmax &lt;- -70.59
+
+#Define a bounding box
+* bbox &lt;- st_bbox(c(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax), 
+*                crs = st_crs(topography)) 
+
+#Turn it into an sf object for plotting
+grid_box &lt;- st_make_grid(bbox) %&gt;% st_cast("POLYGON")
+
+ggplot() +
+  geom_sf(data = topography, aes(color = ELEVATION)) +
+  geom_sf(data = grid_box, alpha = 0, color = "red") +
+  ggtitle("Topography of Francis-Crane Wildlife Area")
+```
+]
+]
+
+&lt;img src="sf-pres_files/figure-html/otis_topo-out-1.png" width="50%" style="display: block; margin: auto;" /&gt;
+
+---
+## Working with `sf`: Crop to bounding box
+.tiny[
+.remark-inline-code[
+
+```r
+* cropped_topo &lt;- topography %&gt;% st_crop(bbox) 
+
+ggplot() +
+  geom_sf(data = cropped_topo, aes(color = ELEVATION)) +
+  geom_sf(data = grid_box, alpha = 0, color = "red") +
+  ggtitle("Topography of Francis-Crane Wildlife Area")
+```
+]
+]
+
+&lt;img src="sf-pres_files/figure-html/cropped_topo-out-1.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Working with `sf`: Crop to arbitrary polygon
+
+.tiny[
+.remark-inline-code[
+
+```r
+custom_polygon &lt;- sf::st_read(file.path(data.dir, "Polygon_shapefile", "polygon_for_crop.shp"), 
+                              quiet = T) %&gt;%
+  st_transform(st_crs(topography))
+
+#Intersection
+* topo_intersection &lt;- topography %&gt;% st_intersection(custom_polygon) 
+
+#Difference
+* topo_difference &lt;- topography %&gt;% st_difference(custom_polygon) 
+
+#Plotting
+int &lt;- ggplot() +
+  geom_sf(data = topo_intersection, aes(color = ELEVATION)) +
+  guides(color = F) + ggtitle("Intersection")
+
+difff &lt;- ggplot() +
+  geom_sf(data = topo_difference, aes(color = ELEVATION)) +
+  guides(color = F) + ggtitle("Difference")
+
+int + difff + plot_layout(ncol = 2)
+```
+]
+]
+
+&lt;img src="sf-pres_files/figure-html/int_dif-out-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+## Working with `sf`: Spatial joins
+.tiny[
+.remark-inline-code[
+
+```r
+sf_shape &lt;- st_read(file.path(epu.dir,"EPU_extended.shp"),quiet = T) 
+
+#Get the union of all EPUs
+* all_joined &lt;- st_union(sf_shape) 
+
+#Create a grouping column to union New England EPU polygons
+* some_joined &lt;- sf_shape %&gt;% mutate(Region = ifelse(EPU %in% c("GOM","GB","SS"),
+*                                "New England",
+*                                "Mid-Atlantic")) %&gt;% 
+*  group_by(Region) %&gt;% 
+*  summarise() 
+
+all_joined &lt;- ggplot() + geom_sf(data = all_joined, color = "blue") +
+  guides(color = F) 
+
+some_joined &lt;- ggplot() + geom_sf(data = some_joined, aes(color = Region)) +
+  guides(color = F)
+
+all_joined + some_joined + plot_layout(ncol = 2)
+```
+]
+]
+
+&lt;img src="sf-pres_files/figure-html/join_epu-out-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+## Putting it together with fake fish
+
+&lt;img src="sf-pres_files/figure-html/fake_data-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+## Your turn!!
+
+**NOAA Oceans and Climate Branch Ecosystem Monitoring Cruise Data (through June 2018)**
+
+.table[
+<div id="htmlwidget-91f9154024e42ace29be" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-91f9154024e42ace29be">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21"],["Cruise identifier","Cruise identifier","Station number","CTD cast number","Sample bottle number","Sample date","Sample time","Latitude","Longitude","Depth of station","Depth of sample","Water pressure","Water temperature","Water salinity","Potential density at surface pressure","Dissolved oxygen","Silicic acid concentration","Total nitrate and nitrite concentration","Ammonia concentration","Phosphate concentration","Dissolved oxygen"],["EXPOCODE","Cruise_ID","STNNBR","CASTNO","BTLNBR","Date_UTC","Time_UTC","Latitude","Longitude","Depth_station","Depth_sampling","CTDPRS","CTDTEMP","CTDSAL","Sigma.Theta","CTDOXY","SILCAT","NITRIT+NITRAT","AMMMONIA","PHSPHT","CTDOXYMOL"],["","","","","","MM/DD/YYYY","hh:mm","decimal degrees","decimal degrees","m","m","decibars","°C","PSS-78","kg m^-3^","mg L^-1^","microM","microM","microM","microM","micromol kg^-1^"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Variable<\/th>\n      <th>Names<\/th>\n      <th>Units<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"columnDefs":[{"orderable":false,"targets":0}]}},"evals":[],"jsHooks":[]}</script>
+]
+
+
+---
+## References
+
+#### Packages 
+
+[Simple Features for R](https://r-spatial.github.io/sf/index.html)
+
+[Spatiotemporal Arrays, Raster and Vector Datacubes (stars)](https://r-spatial.github.io/stars/)
+
+[gstat](https://r-spatial.github.io/gstat/)
+
+#### Resources, code, and data
+
+[NOAA NEFSC Ecosystem Dynamics and Assessment Github](https://github.com/NOAA-EDAB/)
+
+[Geocomputation with R](https://geocompr.robinlovelace.net/)
+
+[R-spatial](https://www.rspatial.org)
+
+[Mariana Trench Digital Elevation Model](https://catalog.data.gov/dataset/mariana-trench-bathymetric-digital-elevation-model)
+
+[NOAA NEFSC Oceans and Climate Branch](https://www.nefsc.noaa.gov/epd/oceanography/)
+
+[Falmouth, MA GIS Site](http://www.falmouthmass.us/199/Public-Interactive-GIS-Site)
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "githubp",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

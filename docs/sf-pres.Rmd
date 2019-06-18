@@ -321,19 +321,19 @@ knitr::include_graphics(file.path(image.dir, "smast4.png"))
   * `c(x,y)`
   
 `LINESTRING`: A numeric matrix with points in rows
-  * `matrix(data = c(x1,y1,...), nrow = 2)`
+  * `matrix(data = c(x1,y1,...), ncol = 2)`
 
 `POLYGON`: A list of numeric matrices
-  * `list(matrix(x1, y1,...,x1,y1), nrow  = 2)`
+  * `list(matrix(x1, y1,...,x1,y1), ncol = 2)`
   
 `MULTIPOINT`: A numeric matrix with points in rows
-* `matrix(data = c(x1,y1,...), nrow = 2)`
+* `matrix(data = c(x1,y1,...), ncol = 2)`
   
 `MULTILINESTRING`: A list of numeric matrices
- * `list(matrix(x1, y1,...), nrow  = 2)`
+ * `list(matrix(x1, y1,...), ncol  = 2)`
 
 `MULTIPOLYGON`: A list of lists of matrices...
- * `list(list(matrix(x11, y11,...,x11,y11), nrow  = 2), list(matrix(x21, y21,...,x21,y21), nrow  = 2), ...)`
+ * `list(list(matrix(x11, y11,...,x11,y11), ncol  = 2), list(matrix(x21, y21,...,x21,y21), ncol  = 2), ...)`
 
 `GEOMETRYCOLLECTION`: A list of `sf` objects
  * `list(sf_object1, sf_object2, ...)`
