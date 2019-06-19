@@ -9,18 +9,18 @@ get_polygon <- function(fname){
   kmz <- data.frame(lat =kmz[[1]][,1],
                      lon = kmz[[1]][,2])
   
-  p = Polygon(kmz)
-  ps = Polygons(list(p),1)
-  sp_kmz = SpatialPolygons(list(ps))
+  p = sp::Polygon(kmz)
+  ps = sp::Polygons(list(p),1)
+  sp_kmz = sp::SpatialPolygons(list(ps))
   
   sf_kmz <- as(SP_kmz, "sf") 
   
   #rotate 180 degrees
-  sf_poly_geometry <- st_geometry(sf_kmz)
-  cntrd = st_centroid(sf_poly_geometry)
+  sf_poly_geometry <- sf::st_geometry(sf_kmz)
+  cntrd = sf::st_centroid(sf_poly_geometry)
   sf_poly_rotated = (sf_poly_geometry - cntrd) * rot(pi*2) + cntrd
-  sf_poly_out <- sf_poly_rotated %>% st_cast("POLYGON")
-  st_crs(sf_poly_out) <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+  sf_poly_out <- sf_poly_rotated %>% sf::st_cast("POLYGON")
+  sf::st_crs(sf_poly_out) <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
 
   
   return(sf_poly_out)
