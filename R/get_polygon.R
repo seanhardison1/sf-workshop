@@ -3,7 +3,7 @@
 
 rot = function(a) matrix(c(cos(a), sin(a), -sin(a), cos(a)), 2, 2)
 
-get_polygon <- function(fname , save = F){
+get_polygon <- function(fname){
   #get region for clipping
   kmz <- maptools::getKMLcoordinates(textConnection(system(paste0("unzip -p data/",fname,".kmz"), intern = TRUE)))
   kmz <- data.frame(lat =kmz[[1]][,1],
