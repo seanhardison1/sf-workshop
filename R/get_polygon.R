@@ -1,4 +1,5 @@
-#Returns a polygon of the FCWA 
+# A function to read .kmz files containing custom polygons (e.g. those created using Google Earth) into R.
+# After being loaded into the environment, polygons are converted to sf objects.
 
 rot = function(a) matrix(c(cos(a), sin(a), -sin(a), cos(a)), 2, 2)
 
