@@ -516,13 +516,10 @@ st_crs(epu)
 .medium[
 .remark-inline-code[
 ```{r st-transform, echo = T, eval = F}
-#Pass a proj4string
-p4s <- "+proj=longlat +datum=NAD27 +no_defs"
-st_transform(epu, p4s)
-
 #Pass an EPSG code
-epsg <- 4627
-st_transform(epu, epsg)
+epsg <- 3857
+epu_new <- st_transform(epu, crs = epsg)
+epu_new
 ```
 ]
 ]

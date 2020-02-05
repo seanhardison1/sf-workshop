@@ -51,7 +51,7 @@ plot(nc)
 ### Create the simplest simple feature geometry: a `POINT`
 ```{r make_points}
 
-point_in_space <- c(1,2) #in XY space
+point_in_space <- c(1,2) #in XY space 
 
 point_geometry <- st_point(point_in_space)
 
@@ -78,12 +78,15 @@ linestring_geometry <- st_linestring(points_in_space)
 
 linestring_geometry
 plot(linestring_geometry)
+plot(multipoint_geometry, add = T)
 ```
 
-1. Create and plot a `POLYGON` geometry type using the function `st_polygon`
+1. Create and plot a `POLYGON` geometry type using the function `st_polygon`. 
+
+* `st_polygon` accepts lists of matrices of coordinate pairs (see `?st_polygon`). 
+* The first and last coordinate pairs must be identical to close the polygon. For example, `list(matrix(c(x1, y1, ..., x1, y1), ncol  = 2, brow = TRUE))`.
 
 ```{r build-polygon}
-
 
 ```
 
@@ -102,7 +105,6 @@ plot(linestring_geometry)
 1. Use your `dplyr` skills to determine the average `AREA` and `PERIMETER` of North Carolina counties that had more than 500 births between 1974-1979 (`BIR74`).
 
 ```{r getting-tidy}
-
 
 ```
 
@@ -156,11 +158,12 @@ st_crs(epu)
 
 #Pass a proj4string
 p4s <- "+proj=longlat +datum=NAD27 +no_defs"
-st_transform(epu, p4s)
+new <- st_transform(epu, crs = st_crs(p4s))
+new
 
 #Pass an EPSG code
-epsg <- 4627
-st_transform(epu, epsg)
+epsg <- 3857
+new <- st_transform(epu, epsg)
 ```
 
 4. The code below evaluates to a `SpatialPolygonsDataFrame`. Using `as()`, convert the output to an `sf` object. Assign the following `proj4string` to the object: "+proj=longlat +datum=WGS84 +no_defs". Plot the object using `ggplot2`.
@@ -218,11 +221,6 @@ load(file.path(data.dir, "topo_4ft.Rdata"))
 ymax <-  41.6525; xmin <- -70.5975
 ymin <-  41.6425; xmax <- -70.59
 
-#1. Use st_bbox to define your bounding box. Don't forget to set you CRS!!
-
-#2. Use st_crop to crop the topography object. 
-
-#3. Visualize the output using ggplot2
 
 ```
 
